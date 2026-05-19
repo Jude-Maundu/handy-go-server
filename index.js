@@ -6,13 +6,17 @@ const app = express();
 app.use(express.json());
 
 // ── Firebase Admin init ────────────────────────────────────────────────────────
-// On Render, set FIREBASE_SERVICE_ACCOUNT env var to the full JSON string
-// of your Firebase service account key (from Firebase Console → Project Settings
-// → Service Accounts → Generate new private key)
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
+// Set these three env vars on Render (copy values from your service account JSON):
+//   FIREBASE_PROJECT_ID   → "project_id" field
+//   FIREBASE_CLIENT_EMAIL → "client_email" field
+//   FIREBASE_PRIVATE_KEY  → "private_key" field (paste the whole -----BEGIN...END----- block)
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    projectId:   process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    // Render escapes \n as \\n in env vars — this converts them back
+    privateKey:  process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  }),
 });
 
 const db = admin.firestore();
